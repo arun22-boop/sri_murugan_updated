@@ -1,7 +1,19 @@
 import { Link } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
+import toast from "react-hot-toast";
+import { useCart } from "../context/CartContext";
 
 function ProductCard({ product }) {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart(product);
+
+    toast.success(`${product.name} added to cart`, {
+      duration: 2000,
+    });
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition duration-300">
 
@@ -34,7 +46,10 @@ function ProductCard({ product }) {
             View
           </Link>
 
-          <button className="bg-orange-500 text-white px-4 rounded-lg hover:bg-orange-600">
+          <button
+            onClick={handleAddToCart}
+            className="bg-orange-500 text-white px-4 rounded-lg hover:bg-orange-600"
+          >
             <FaShoppingCart />
           </button>
 

@@ -1,16 +1,21 @@
 import { Outlet } from "react-router-dom";
-import AdminSidebar from "./AdminSidebar";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
 
 function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-gray-100">
 
-      {/* Sidebar */}
-      <AdminSidebar />
+      <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex-1 p-8 overflow-auto">
-        <Outlet />
+      <div className="flex-1 flex flex-col">
+
+        <Topbar />
+
+        <main className="p-6 flex-1 overflow-auto">
+          <Outlet />
+        </main>
+
       </div>
 
     </div>

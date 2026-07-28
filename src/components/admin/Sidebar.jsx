@@ -12,7 +12,7 @@ import {
 
 import { Link, useNavigate } from "react-router-dom";
 
-function AdminSidebar() {
+function Sidebar() {
   const navigate = useNavigate();
 
   const logout = () => {
@@ -64,14 +64,6 @@ function AdminSidebar() {
         </Link>
 
         <Link
-          to="/admin/reviews"
-          className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700"
-        >
-          <FaStar />
-          Reviews
-        </Link>
-
-        <Link
           to="/admin/gallery"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700"
         >
@@ -108,4 +100,4 @@ function AdminSidebar() {
   );
 }
 
-export default AdminSidebar;
+export default Sidebar;

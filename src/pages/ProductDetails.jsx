@@ -5,6 +5,7 @@ import {
   FaPhoneAlt,
   FaShoppingCart,
 } from "react-icons/fa";
+import toast from "react-hot-toast";
 import { useCart } from "../context/CartContext";
 import products from "../data/products";
 
@@ -29,7 +30,6 @@ function ProductDetails() {
     );
   }
 
-  // WhatsApp Message
   const whatsappMessage = `
 Hello Sri Murugan Agency,
 
@@ -37,14 +37,14 @@ Product : ${product.name}
 Brand : ${product.brand}
 Quantity : ${quantity} ${product.unit}
 
-Please send me the price.
+Please send me the latest price.
 `;
 
-  // Add To Cart
   const handleAddToCart = () => {
-    addToCart({
-      ...product,
-      quantity,
+    addToCart(product, quantity);
+
+    toast.success(`${product.name} added to cart`, {
+      duration: 2000,
     });
 
     navigate("/cart");
@@ -55,7 +55,6 @@ Please send me the price.
 
       <div className="grid md:grid-cols-2 gap-12">
 
-        {/* Product Image */}
         <div>
           <img
             src={product.image}
@@ -64,7 +63,6 @@ Please send me the price.
           />
         </div>
 
-        {/* Product Details */}
         <div>
 
           <span className="bg-orange-100 text-orange-600 px-4 py-1 rounded-full">
@@ -83,7 +81,7 @@ Please send me the price.
             ₹ {product.price}
           </h3>
 
-          <div className="mt-8 space-y-4 text-lg">
+          <div className="mt-8 space-y-3">
 
             <p>
               <strong>Brand :</strong> {product.brand}
@@ -94,19 +92,18 @@ Please send me the price.
             </p>
 
             <p>
-              <strong>Availability :</strong>{" "}
+              <strong>Status :</strong>{" "}
               <span className="text-green-600 font-bold">
-                Available
+                In Stock
               </span>
             </p>
 
           </div>
 
-          {/* Quantity */}
           <div className="mt-8">
 
-            <h3 className="text-xl font-bold mb-4">
-              Select Quantity
+            <h3 className="font-bold mb-3">
+              Quantity
             </h3>
 
             <div className="flex items-center gap-3">
@@ -123,12 +120,12 @@ Please send me the price.
 
               <input
                 type="number"
-                min="1"
                 value={quantity}
+                min="1"
                 onChange={(e) =>
                   setQuantity(Number(e.target.value))
                 }
-                className="w-24 text-center border rounded-lg py-3 text-xl"
+                className="w-24 text-center border rounded-lg py-3"
               />
 
               <button
@@ -144,20 +141,18 @@ Please send me the price.
 
           </div>
 
-          {/* Description */}
           <div className="mt-8">
 
-            <h3 className="text-2xl font-bold mb-2">
+            <h3 className="text-2xl font-bold">
               Description
             </h3>
 
-            <p className="text-gray-600">
+            <p className="text-gray-600 mt-2">
               {product.description}
             </p>
 
           </div>
 
-          {/* Buttons */}
           <div className="mt-10 space-y-4">
 
             <button
@@ -165,7 +160,7 @@ Please send me the price.
               className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-3"
             >
               <FaShoppingCart />
-              Add to Cart
+              Add To Cart
             </button>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -196,9 +191,9 @@ Please send me the price.
 
           <Link
             to="/products"
-            className="inline-block mt-10 text-blue-600 font-bold"
+            className="inline-block mt-8 text-blue-600 font-bold"
           >
-            ← Back to Products
+            ← Back To Products
           </Link>
 
         </div>

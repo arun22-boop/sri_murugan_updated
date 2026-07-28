@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
 
-function AddProduct(){
+function EditProduct(){
 
+
+const { id } = useParams();
 
 const navigate = useNavigate();
 
@@ -36,41 +38,44 @@ image:""
 
 
 
-const categories=[
+// Load Product
 
-"Cement",
 
-"Paint",
+useEffect(()=>{
 
-"Pipe",
 
-"Electrical",
+const products =
 
-"Sand",
-
-"Jalli",
-
-"Block",
-
-"Other"
-
-];
+JSON.parse(
+localStorage.getItem("products")
+) || [];
 
 
 
-const units=[
+const selectedProduct =
 
-"Bag",
+products.find(
 
-"Kg",
+item =>
 
-"Piece",
+item.id === Number(id)
 
-"Meter",
+);
 
-"Box"
 
-];
+
+if(selectedProduct){
+
+
+setProduct(selectedProduct);
+
+
+}
+
+
+},[id]);
+
+
 
 
 
@@ -79,6 +84,7 @@ const units=[
 
 
 // Input Change
+
 
 const handleChange=(e)=>{
 
@@ -101,42 +107,18 @@ setProduct({
 
 
 
-// Save Product
+
+// Update Product
 
 
-const saveProduct=(e)=>{
+const updateProduct=(e)=>{
 
 
 e.preventDefault();
 
 
 
-
-
-if(
-!product.name ||
-!product.price ||
-!product.stock
-){
-
-
-toast.error(
-"Product name, price and stock required"
-);
-
-
-return;
-
-
-}
-
-
-
-
-
-
-
-const oldProducts =
+const products =
 
 JSON.parse(
 localStorage.getItem("products")
@@ -145,26 +127,23 @@ localStorage.getItem("products")
 
 
 
+const updatedProducts =
+
+products.map(item=>
 
 
+item.id === Number(id)
 
-const newProduct={
+?
 
+product
 
-id:Date.now(),
+:
 
-
-...product,
-
-
-price:Number(product.price),
+item
 
 
-stock:Number(product.stock)
-
-
-};
-
+);
 
 
 
@@ -175,17 +154,9 @@ localStorage.setItem(
 
 "products",
 
-JSON.stringify([
-
-...oldProducts,
-
-newProduct
-
-])
+JSON.stringify(updatedProducts)
 
 );
-
-
 
 
 
@@ -200,38 +171,11 @@ new Event("storage")
 
 
 
-
 toast.success(
 
-"Product Added Successfully"
+"Product Updated Successfully"
 
 );
-
-
-
-
-
-setProduct({
-
-name:"",
-
-tamilName:"",
-
-brand:"",
-
-category:"",
-
-unit:"",
-
-price:"",
-
-stock:"",
-
-image:""
-
-});
-
-
 
 
 
@@ -256,7 +200,7 @@ return(
 
 <h1 className="text-3xl font-bold mb-8">
 
-Add New Product
+Edit Product
 
 </h1>
 
@@ -264,16 +208,13 @@ Add New Product
 
 
 
-
 <form
 
-onSubmit={saveProduct}
+onSubmit={updateProduct}
 
 className="max-w-xl space-y-4"
 
 >
-
-
 
 
 
@@ -291,7 +232,6 @@ placeholder="Product Name"
 className="border p-3 w-full rounded"
 
 />
-
 
 
 
@@ -338,7 +278,7 @@ className="border p-3 w-full rounded"
 
 
 
-<select
+<input
 
 name="category"
 
@@ -346,81 +286,11 @@ value={product.category}
 
 onChange={handleChange}
 
-className="border p-3 w-full rounded"
-
->
-
-
-<option value="">
-
-Select Category
-
-</option>
-
-
-{
-
-categories.map(item=>(
-
-<option key={item}>
-
-{item}
-
-</option>
-
-))
-
-}
-
-
-</select>
-
-
-
-
-
-
-
-
-<select
-
-name="unit"
-
-value={product.unit}
-
-onChange={handleChange}
+placeholder="Category"
 
 className="border p-3 w-full rounded"
 
->
-
-
-<option value="">
-
-Select Unit
-
-</option>
-
-
-
-{
-
-units.map(item=>(
-
-<option key={item}>
-
-{item}
-
-</option>
-
-))
-
-}
-
-
-
-</select>
-
+/>
 
 
 
@@ -430,7 +300,25 @@ units.map(item=>(
 
 <input
 
-type="number"
+name="unit"
+
+value={product.unit}
+
+onChange={handleChange}
+
+placeholder="Unit"
+
+className="border p-3 w-full rounded"
+
+/>
+
+
+
+
+
+
+
+<input
 
 name="price"
 
@@ -450,10 +338,7 @@ className="border p-3 w-full rounded"
 
 
 
-
 <input
-
-type="number"
 
 name="stock"
 
@@ -466,7 +351,6 @@ placeholder="Stock"
 className="border p-3 w-full rounded"
 
 />
-
 
 
 
@@ -494,30 +378,6 @@ className="border p-3 w-full rounded"
 
 
 
-
-{
-
-product.image &&
-
-<img
-
-src={product.image}
-
-alt="preview"
-
-className="w-32 h-32 object-contain border rounded"
-
-/>
-
-}
-
-
-
-
-
-
-
-
 <div className="flex gap-4">
 
 
@@ -525,14 +385,13 @@ className="w-32 h-32 object-contain border rounded"
 
 type="submit"
 
-className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+className="bg-green-600 text-white px-6 py-3 rounded-lg"
 
 >
 
-Save Product
+Update Product
 
 </button>
-
 
 
 
@@ -572,4 +431,4 @@ Cancel
 }
 
 
-export default AddProduct;
+export default EditProduct;

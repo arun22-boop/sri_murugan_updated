@@ -222,37 +222,174 @@ Ganapathipalayam
     doc.save(`Quotation-${orderId}.pdf`);
   };
 
-  // ==========================
-  // Place WhatsApp Order
-  // ==========================
+// ==========================
+// Place WhatsApp Order
+// ==========================
 
-  const handleOrder = () => {
-    if (!name || !phone) {
-      alert(
-        "Please enter Customer Name and Mobile Number."
-      );
-      return;
-    }
+const handleOrder = () => {
 
-    if (
-      deliveryType === "Delivery" &&
-      address.trim() === ""
-    ) {
-      alert("Please enter Delivery Address.");
-      return;
-    }
 
-    window.open(
-      `https://wa.me/919095932878?text=${encodeURIComponent(
-        whatsappMessage
-      )}`,
-      "_blank"
+  if (!name || !phone) {
+
+    alert(
+      "Please enter Customer Name and Mobile Number."
     );
 
-    clearCart();
+    return;
 
-    navigate("/checkout-success");
+  }
+
+
+
+  if (
+    deliveryType === "Delivery" &&
+    address.trim() === ""
+  ) {
+
+    alert("Please enter Delivery Address.");
+
+    return;
+
+  }
+
+
+
+
+
+  // Save Order For Admin Panel
+
+  const newOrder = {
+
+
+    id: orderId,
+
+
+    customerName: name,
+
+
+    phone: phone,
+
+
+    address: address,
+
+
+    deliveryType: deliveryType,
+
+
+    location: location,
+
+
+
+    products: cartItems.map(item => ({
+
+
+      id:item.id,
+
+
+      name:item.name,
+
+
+      tamilName:item.tamilName,
+
+
+      brand:item.brand,
+
+
+      unit:item.unit,
+
+
+      price:item.price,
+
+
+      quantity:item.quantity,
+
+
+      image:item.image
+
+
+    })),
+
+
+
+    totalItems: totalItems,
+
+
+    total: totalAmount,
+
+
+    date: orderDate,
+
+
+    status:"Pending"
+
+
   };
+
+
+
+
+
+
+
+  const oldOrders =
+
+  JSON.parse(
+    localStorage.getItem("orders")
+  ) || [];
+
+
+
+
+
+
+  localStorage.setItem(
+
+    "orders",
+
+    JSON.stringify([
+
+      ...oldOrders,
+
+      newOrder
+
+    ])
+
+  );
+
+
+
+
+
+
+
+  // WhatsApp Open
+
+
+  window.open(
+
+    `https://wa.me/919095932878?text=${encodeURIComponent(
+      whatsappMessage
+    )}`,
+
+    "_blank"
+
+  );
+
+
+
+
+
+
+
+  clearCart();
+
+
+
+  navigate("/checkout-success");
+
+
+
+};
 
   return (
   <section className="max-w-7xl mx-auto px-6 py-12">

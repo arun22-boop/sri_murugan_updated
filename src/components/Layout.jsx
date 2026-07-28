@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import FloatingButtons from "./FloatingButtons";
-import FloatingReview from "./FloatingReview";
 import FloatingQuoteForm from "./FloatingQuoteForm";
 
 function Layout() {
@@ -18,7 +17,6 @@ function Layout() {
       <Footer />
 
       <FloatingButtons />
-      <FloatingReview />
       <FloatingQuoteForm />
     </>
   );

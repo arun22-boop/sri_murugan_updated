@@ -4,7 +4,6 @@ import {
   FaBars,
   FaTimes,
   FaPhoneAlt,
-  FaWhatsapp,
   FaShoppingCart,
 } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
@@ -26,46 +25,49 @@ function Navbar() {
     };
 
     window.addEventListener("scroll", handleScroll);
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const navClass = ({ isActive }) =>
     isActive
-      ? "text-orange-600 font-semibold"
-      : "text-gray-800 hover:text-orange-600 transition";
+      ? "text-gray-700 hover:text-orange-600 transition"
+      : "text-gray-700 hover:text-orange-600 transition";
 
   return (
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
           ? "bg-white shadow-lg"
-          : "bg-white/100 backdrop-blur-md"
+          : "bg-white"
       }`}
     >
-      <div className="max-w-8xl mx-auto px-6">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-5">
+
+        <div className="flex justify-between items-center h-20">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
+
+          <Link to="/" className="flex items-center gap-4">
+
             <img
               src="/images/logo.png"
-              alt="Sri Murugan Agency"
-              className="w-14 h-14 rounded-full"
+              alt="Logo"
+              className="w-12 h-12 rounded-full"
             />
 
             <div>
-              <h1 className="font-bold text-xl text-orange-600">
+              <h2 className="text-3xl font-bold text-blue-900">
                 Sri Murugan Agency
-              </h1>
+              </h2>
 
-              <p className="text-xs text-gray-500">
-                Ganapathipalayam
-              </p>
             </div>
+
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center gap-8">
+
+          <div className="hidden lg:flex items-center gap-7">
 
             <NavLink to="/" className={navClass}>
               Home
@@ -94,7 +96,7 @@ function Navbar() {
               <FaShoppingCart />
 
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
                   {totalItems}
                 </span>
               )}
@@ -102,22 +104,23 @@ function Navbar() {
 
             <a
               href="tel:9095932878"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
             >
               <FaPhoneAlt />
               Call
             </a>
 
+            <Link
+              to="/admin"
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+            >
+              Admin Login
+            </Link>
+
           </div>
 
-          <Link
-            to="/admin"
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-         >
-           Admin Login
-         </Link>
-
           {/* Mobile Button */}
+
           <button
             className="lg:hidden text-2xl"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -126,69 +129,75 @@ function Navbar() {
           </button>
 
         </div>
+
       </div>
 
       {/* Mobile Menu */}
+
       {menuOpen && (
+
         <div className="lg:hidden bg-white shadow-lg">
 
           <NavLink
             to="/"
-            className="block p-4 border-b"
             onClick={() => setMenuOpen(false)}
+            className="block px-5 py-4 border-b"
           >
             Home
           </NavLink>
 
           <NavLink
             to="/products"
-            className="block p-4 border-b"
             onClick={() => setMenuOpen(false)}
+            className="block px-5 py-4 border-b"
           >
             Products
           </NavLink>
 
           <NavLink
             to="/about"
-            className="block p-4 border-b"
             onClick={() => setMenuOpen(false)}
+            className="block px-5 py-4 border-b"
           >
             About
           </NavLink>
 
           <NavLink
             to="/gallery"
-            className="block p-4 border-b"
             onClick={() => setMenuOpen(false)}
+            className="block px-5 py-4 border-b"
           >
             Gallery
           </NavLink>
 
           <NavLink
             to="/contact"
-            className="block p-4 border-b"
             onClick={() => setMenuOpen(false)}
+            className="block px-5 py-4 border-b"
           >
             Contact
           </NavLink>
 
           <Link
             to="/cart"
-            className="block p-4 border-b"
             onClick={() => setMenuOpen(false)}
+            className="block px-5 py-4 border-b"
           >
             🛒 Cart ({totalItems})
           </Link>
 
           <Link
             to="/admin"
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold"
-         >
+            onClick={() => setMenuOpen(false)}
+            className="block mx-4 my-4 text-center bg-red-600 text-white py-3 rounded-lg"
+          >
             Admin Login
-         </Link>
+          </Link>
 
         </div>
+
       )}
+
     </nav>
   );
 }

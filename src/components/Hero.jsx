@@ -44,18 +44,6 @@ function Hero() {
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center text-white px-6">
 
-          <h1 className="text-4xl md:text-6xl font-bold">
-            Sri Murugan Agency
-          </h1>
-
-          <p className="mt-5 text-xl md:text-2xl">
-            உங்கள் நம்பிக்கைக்குரிய கட்டுமானப் பொருட்கள் விற்பனை நிலையம்
-          </p>
-
-          <p className="mt-4 text-lg">
-            Hollow Blocks • Cement • Asian Paints • Astral Pipes
-          </p>
-
         </div>
       </div>
 
