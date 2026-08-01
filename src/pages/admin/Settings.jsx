@@ -1,77 +1,29 @@
-import { useEffect, useState } from "react";
+import {useEffect,useState} from "react";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 
 function Settings(){
 
 
-const [settings,setSettings] = useState({
+const [setting,setSetting]=useState({
 
 shopName:"",
-
-address:"",
-
-phone1:"",
-
-phone2:"",
-
+phone:"",
 whatsapp:"",
-
+address:"",
 email:"",
-
 logo:""
 
 });
 
 
 
-
-
-
-// Load Settings
 
 
 useEffect(()=>{
 
-
-const savedSettings =
-
-JSON.parse(
-localStorage.getItem("settings")
-);
-
-
-
-if(savedSettings){
-
-setSettings(savedSettings);
-
-}
-
-else{
-
-
-setSettings({
-
-shopName:"SRI MURUGAN AGENCY",
-
-address:"Ganapathipalayam, Erode",
-
-phone1:"9095932878",
-
-phone2:"9095332878",
-
-whatsapp:"9095932878",
-
-email:"",
-
-logo:""
-
-});
-
-
-}
-
+loadSettings();
 
 },[]);
 
@@ -79,18 +31,37 @@ logo:""
 
 
 
+const loadSettings=async()=>{
+
+
+const res=await axios.get(
+
+"http://localhost:5000/api/settings"
+
+);
+
+
+if(res.data){
+
+setSetting(res.data);
+
+}
+
+
+};
 
 
 
-// Change Input
+
+
 
 
 const handleChange=(e)=>{
 
 
-setSettings({
+setSetting({
 
-...settings,
+...setting,
 
 [e.target.name]:e.target.value
 
@@ -106,44 +77,39 @@ setSettings({
 
 
 
-
-// Save
-
-
-const saveSettings=(e)=>{
+const saveSettings=async()=>{
 
 
-e.preventDefault();
+try{
 
 
+await axios.put(
 
-localStorage.setItem(
+"http://localhost:5000/api/settings",
 
-"settings",
-
-JSON.stringify(settings)
-
-);
-
-
-
-window.dispatchEvent(
-
-new Event("storage")
+setting
 
 );
 
 
 
 toast.success(
-
-"Settings Updated Successfully"
-
+"Settings Updated"
 );
 
 
-};
+}
 
+catch(error){
+
+toast.error(
+"Update Failed"
+);
+
+}
+
+
+};
 
 
 
@@ -158,35 +124,17 @@ return(
 <div className="p-6">
 
 
-<h1 className="text-3xl font-bold mb-2">
+<h1 className="text-3xl font-bold mb-8">
 
-Settings
+Website Settings
 
 </h1>
 
 
-<p className="text-gray-500 mb-8">
-
-Sri Murugan Agency
-
-</p>
 
 
 
-
-
-
-
-
-<form
-
-onSubmit={saveSettings}
-
-className="max-w-xl space-y-5"
-
->
-
-
+<div className="max-w-xl space-y-4">
 
 
 
@@ -194,7 +142,7 @@ className="max-w-xl space-y-5"
 
 name="shopName"
 
-value={settings.shopName}
+value={setting.shopName}
 
 onChange={handleChange}
 
@@ -207,69 +155,19 @@ className="border p-3 w-full rounded"
 
 
 
-
-
-
-
 <input
 
-name="address"
+name="phone"
 
-value={settings.address}
+value={setting.phone}
 
 onChange={handleChange}
 
-placeholder="Shop Address"
+placeholder="Phone"
 
 className="border p-3 w-full rounded"
 
 />
-
-
-
-
-
-
-
-
-<input
-
-name="phone1"
-
-value={settings.phone1}
-
-onChange={handleChange}
-
-placeholder="Phone Number 1"
-
-className="border p-3 w-full rounded"
-
-/>
-
-
-
-
-
-
-
-
-<input
-
-name="phone2"
-
-value={settings.phone2}
-
-onChange={handleChange}
-
-placeholder="Phone Number 2"
-
-className="border p-3 w-full rounded"
-
-/>
-
-
-
-
 
 
 
@@ -278,18 +176,15 @@ className="border p-3 w-full rounded"
 
 name="whatsapp"
 
-value={settings.whatsapp}
+value={setting.whatsapp}
 
 onChange={handleChange}
 
-placeholder="WhatsApp Number"
+placeholder="Whatsapp"
 
 className="border p-3 w-full rounded"
 
 />
-
-
-
 
 
 
@@ -299,7 +194,7 @@ className="border p-3 w-full rounded"
 
 name="email"
 
-value={settings.email}
+value={setting.email}
 
 onChange={handleChange}
 
@@ -313,6 +208,21 @@ className="border p-3 w-full rounded"
 
 
 
+<textarea
+
+name="address"
+
+value={setting.address}
+
+onChange={handleChange}
+
+placeholder="Address"
+
+className="border p-3 w-full rounded"
+
+/>
+
+
 
 
 
@@ -320,11 +230,11 @@ className="border p-3 w-full rounded"
 
 name="logo"
 
-value={settings.logo}
+value={setting.logo}
 
 onChange={handleChange}
 
-placeholder="Logo Image URL"
+placeholder="Logo URL"
 
 className="border p-3 w-full rounded"
 
@@ -336,39 +246,17 @@ className="border p-3 w-full rounded"
 
 
 
-
-{
-
-settings.logo &&
-
-<img
-
-src={settings.logo}
-
-alt="logo preview"
-
-className="w-32 h-32 object-contain border rounded"
-
-/>
-
-}
-
-
-
-
-
-
-
-
 <button
 
-type="submit"
+onClick={saveSettings}
 
-className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg"
+className="bg-blue-600 text-white px-6 py-3 rounded"
 
 >
 
+
 Save Settings
+
 
 </button>
 
@@ -376,10 +264,7 @@ Save Settings
 
 
 
-
-
-</form>
-
+</div>
 
 
 </div>

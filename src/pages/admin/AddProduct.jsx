@@ -1,84 +1,31 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 
 function AddProduct(){
 
 
-const navigate = useNavigate();
+const [image,setImage] = useState(null);
 
 
 
 const [product,setProduct] = useState({
 
 name:"",
-
 tamilName:"",
-
 brand:"",
-
 category:"",
-
-unit:"",
-
+unit:"Piece",
 price:"",
-
 stock:"",
-
-image:""
+description:""
 
 });
 
 
 
 
-
-
-
-const categories=[
-
-"Cement",
-
-"Paint",
-
-"Pipe",
-
-"Electrical",
-
-"Sand",
-
-"Jalli",
-
-"Block",
-
-"Other"
-
-];
-
-
-
-const units=[
-
-"Bag",
-
-"Kg",
-
-"Piece",
-
-"Meter",
-
-"Box"
-
-];
-
-
-
-
-
-
-
-// Input Change
 
 const handleChange=(e)=>{
 
@@ -99,34 +46,78 @@ setProduct({
 
 
 
-
-
-// Save Product
-
-
-const saveProduct=(e)=>{
+const handleSubmit=async(e)=>{
 
 
 e.preventDefault();
 
 
 
+try{
 
 
-if(
-!product.name ||
-!product.price ||
-!product.stock
-){
+const formData = new FormData();
 
 
-toast.error(
-"Product name, price and stock required"
+
+formData.append(
+"name",
+product.name
 );
 
 
-return;
+formData.append(
+"tamilName",
+product.tamilName
+);
 
+
+formData.append(
+"brand",
+product.brand
+);
+
+
+formData.append(
+"category",
+product.category
+);
+
+
+formData.append(
+"unit",
+product.unit
+);
+
+
+formData.append(
+"price",
+product.price
+);
+
+
+formData.append(
+"stock",
+product.stock
+);
+
+
+formData.append(
+"description",
+product.description
+);
+
+
+
+
+// IMAGE FILE
+
+if(image){
+
+formData.append(
+"image",
+image
+);
 
 }
 
@@ -136,110 +127,81 @@ return;
 
 
 
-const oldProducts =
+const res = await axios.post(
 
-JSON.parse(
-localStorage.getItem("products")
-) || [];
+"http://localhost:5000/api/products",
 
+formData,
 
+{
 
+headers:{
 
+"Content-Type":"multipart/form-data"
 
+}
 
-
-const newProduct={
-
-
-id:Date.now(),
-
-
-...product,
-
-
-price:Number(product.price),
-
-
-stock:Number(product.stock)
-
-
-};
-
-
-
-
-
-
-
-localStorage.setItem(
-
-"products",
-
-JSON.stringify([
-
-...oldProducts,
-
-newProduct
-
-])
+}
 
 );
-
-
-
-
-
-
-window.dispatchEvent(
-
-new Event("storage")
-
-);
-
 
 
 
 
 
 toast.success(
-
 "Product Added Successfully"
-
 );
 
 
 
+console.log(res.data);
+
+
+
+
+
+// CLEAR
 
 
 setProduct({
 
 name:"",
-
 tamilName:"",
-
 brand:"",
-
 category:"",
-
-unit:"",
-
+unit:"Piece",
 price:"",
-
 stock:"",
-
-image:""
+description:""
 
 });
 
 
+setImage(null);
 
 
 
-navigate("/admin/products");
+}
+
+
+catch(error){
+
+
+console.log(error.response?.data || error);
+
+
+toast.error(
+"Product Add Failed"
+);
+
+
+}
 
 
 
 };
+
 
 
 
@@ -251,12 +213,12 @@ navigate("/admin/products");
 return(
 
 
-<div className="p-6">
+<div className="p-8">
 
 
-<h1 className="text-3xl font-bold mb-8">
+<h1 className="text-2xl font-bold mb-6">
 
-Add New Product
+Add Product
 
 </h1>
 
@@ -264,12 +226,11 @@ Add New Product
 
 
 
-
 <form
 
-onSubmit={saveProduct}
+onSubmit={handleSubmit}
 
-className="max-w-xl space-y-4"
+className="space-y-4"
 
 >
 
@@ -280,15 +241,17 @@ className="max-w-xl space-y-4"
 
 <input
 
+type="text"
+
 name="name"
+
+placeholder="Product Name"
 
 value={product.name}
 
 onChange={handleChange}
 
-placeholder="Product Name"
-
-className="border p-3 w-full rounded"
+className="border p-3 w-full"
 
 />
 
@@ -297,18 +260,19 @@ className="border p-3 w-full rounded"
 
 
 
-
 <input
 
+type="text"
+
 name="tamilName"
+
+placeholder="Tamil Name"
 
 value={product.tamilName}
 
 onChange={handleChange}
 
-placeholder="Tamil Name"
-
-className="border p-3 w-full rounded"
+className="border p-3 w-full"
 
 />
 
@@ -320,15 +284,17 @@ className="border p-3 w-full rounded"
 
 <input
 
+type="text"
+
 name="brand"
+
+placeholder="Brand"
 
 value={product.brand}
 
 onChange={handleChange}
 
-placeholder="Brand"
-
-className="border p-3 w-full rounded"
+className="border p-3 w-full"
 
 />
 
@@ -338,42 +304,22 @@ className="border p-3 w-full rounded"
 
 
 
-<select
+
+<input
+
+type="text"
 
 name="category"
+
+placeholder="Category"
 
 value={product.category}
 
 onChange={handleChange}
 
-className="border p-3 w-full rounded"
+className="border p-3 w-full"
 
->
-
-
-<option value="">
-
-Select Category
-
-</option>
-
-
-{
-
-categories.map(item=>(
-
-<option key={item}>
-
-{item}
-
-</option>
-
-))
-
-}
-
-
-</select>
+/>
 
 
 
@@ -390,33 +336,29 @@ value={product.unit}
 
 onChange={handleChange}
 
-className="border p-3 w-full rounded"
+className="border p-3 w-full"
 
 >
 
 
-<option value="">
-
-Select Unit
-
+<option value="Piece">
+Piece
 </option>
 
 
-
-{
-
-units.map(item=>(
-
-<option key={item}>
-
-{item}
-
+<option value="Bag">
+Bag
 </option>
 
-))
 
-}
+<option value="Kg">
+Kg
+</option>
 
+
+<option value="Meter">
+Meter
+</option>
 
 
 </select>
@@ -434,13 +376,13 @@ type="number"
 
 name="price"
 
+placeholder="Price"
+
 value={product.price}
 
 onChange={handleChange}
 
-placeholder="Price"
-
-className="border p-3 w-full rounded"
+className="border p-3 w-full"
 
 />
 
@@ -457,13 +399,13 @@ type="number"
 
 name="stock"
 
+placeholder="Stock"
+
 value={product.stock}
 
 onChange={handleChange}
 
-placeholder="Stock"
-
-className="border p-3 w-full rounded"
+className="border p-3 w-full"
 
 />
 
@@ -471,20 +413,36 @@ className="border p-3 w-full rounded"
 
 
 
+
+
+
+
+{/* IMAGE UPLOAD */}
+
+
+<label className="font-semibold">
+
+Product Image
+
+</label>
 
 
 
 <input
 
-name="image"
+type="file"
 
-value={product.image}
+accept="image/*"
 
-onChange={handleChange}
+onChange={(e)=>{
 
-placeholder="Image URL"
+setImage(
+e.target.files[0]
+)
 
-className="border p-3 w-full rounded"
+}}
+
+className="border p-3 w-full"
 
 />
 
@@ -494,18 +452,21 @@ className="border p-3 w-full rounded"
 
 
 
+{/* IMAGE PREVIEW */}
 
 {
 
-product.image &&
+image &&
 
 <img
 
-src={product.image}
+src={
+URL.createObjectURL(image)
+}
 
 alt="preview"
 
-className="w-32 h-32 object-contain border rounded"
+className="w-32 h-32 object-cover mt-3"
 
 />
 
@@ -517,43 +478,38 @@ className="w-32 h-32 object-contain border rounded"
 
 
 
+<textarea
 
-<div className="flex gap-4">
+name="description"
+
+placeholder="Description"
+
+value={product.description}
+
+onChange={handleChange}
+
+className="border p-3 w-full"
+
+/>
+
+
+
+
+
 
 
 <button
 
 type="submit"
 
-className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+className="bg-blue-600 text-white px-6 py-3 rounded"
 
 >
 
-Save Product
+Add Product
 
 </button>
 
-
-
-
-
-<button
-
-type="button"
-
-onClick={()=>navigate("/admin/products")}
-
-className="bg-gray-500 text-white px-6 py-3 rounded-lg"
-
->
-
-Cancel
-
-</button>
-
-
-
-</div>
 
 
 
@@ -562,11 +518,10 @@ Cancel
 </form>
 
 
-
 </div>
 
 
-);
+)
 
 
 }

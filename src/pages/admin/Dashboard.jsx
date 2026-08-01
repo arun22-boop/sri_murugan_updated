@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
+
 import {
-  FaBox,
-  FaShoppingCart,
-  FaMoneyBill,
-  FaClock,
-  FaCheckCircle
+FaBox,
+FaShoppingCart,
+FaClock,
+FaMoneyBillWave
 } from "react-icons/fa";
+
 
 
 function Dashboard(){
@@ -22,26 +24,7 @@ const [orders,setOrders] = useState([]);
 useEffect(()=>{
 
 
-const productData =
-
-JSON.parse(
-localStorage.getItem("products")
-) || [];
-
-
-
-const orderData =
-
-JSON.parse(
-localStorage.getItem("orders")
-) || [];
-
-
-
-setProducts(productData);
-
-setOrders(orderData);
-
+loadDashboard();
 
 
 },[]);
@@ -51,39 +34,77 @@ setOrders(orderData);
 
 
 
+const loadDashboard = async()=>{
 
-// Total Sales
+
+try{
 
 
-const totalSales =
+const productRes = await axios.get(
 
-orders.reduce(
+"http://localhost:5000/api/products"
 
-(sum,order)=>
+);
 
-sum + Number(order.total || 0),
 
-0
+
+const orderRes = await axios.get(
+
+"http://localhost:5000/api/orders"
 
 );
 
 
 
 
+setProducts(
+productRes.data
+);
+
+
+
+setOrders(
+orderRes.data
+);
+
+
+
+}
+
+catch(error){
+
+
+console.log(error);
+
+
+}
+
+
+};
 
 
 
 
-// Pending Orders
 
 
-const pendingOrders =
 
-orders.filter(
+const pendingOrders = orders.filter(
 
-order =>
+item=>
 
-order.status === "Pending"
+item.orderStatus==="Pending"
+
+).length;
+
+
+
+
+
+const deliveredOrders = orders.filter(
+
+item=>
+
+item.orderStatus==="Delivered"
 
 ).length;
 
@@ -94,18 +115,15 @@ order.status === "Pending"
 
 
 
-// Delivered Orders
+const totalSales = orders.reduce(
 
+(sum,item)=>
 
-const deliveredOrders =
+sum + Number(item.totalAmount),
 
-orders.filter(
+0
 
-order =>
-
-order.status === "Delivered"
-
-).length;
+);
 
 
 
@@ -120,31 +138,21 @@ return(
 
 
 
-<h1 className="text-4xl font-bold mb-2">
 
-Dashboard
+
+<h1 className="text-3xl font-bold mb-8">
+
+Admin Dashboard
 
 </h1>
 
 
-<p className="text-gray-500 mb-8">
-
-Sri Murugan Agency Admin
-
-</p>
 
 
 
 
 
-
-
-
-
-{/* Cards */}
-
-
-<div className="grid md:grid-cols-5 gap-6">
+<div className="grid md:grid-cols-4 gap-6">
 
 
 
@@ -152,27 +160,36 @@ Sri Murugan Agency Admin
 
 
 
-<div className="bg-blue-600 text-white rounded-2xl p-6 shadow">
+<div className="bg-blue-100 p-6 rounded-xl flex items-center gap-4">
 
 
-<div className="flex justify-between">
+<FaBox
 
-<h3 className="text-xl font-bold">
+size={40}
+
+className="text-blue-600"
+
+/>
+
+
+<div>
+
+
+<p className="text-gray-600">
 
 Products
 
-</h3>
-
-<FaBox size={30}/>
-
-</div>
+</p>
 
 
-<p className="text-4xl font-bold mt-5">
+<h2 className="text-3xl font-bold">
 
 {products.length}
 
-</p>
+</h2>
+
+
+</div>
 
 
 </div>
@@ -184,27 +201,37 @@ Products
 
 
 
-<div className="bg-green-600 text-white rounded-2xl p-6 shadow">
+
+<div className="bg-green-100 p-6 rounded-xl flex items-center gap-4">
 
 
-<div className="flex justify-between">
+<FaShoppingCart
 
-<h3 className="text-xl font-bold">
+size={40}
+
+className="text-green-600"
+
+/>
+
+
+<div>
+
+
+<p className="text-gray-600">
 
 Orders
 
-</h3>
-
-<FaShoppingCart size={30}/>
-
-</div>
+</p>
 
 
-<p className="text-4xl font-bold mt-5">
+<h2 className="text-3xl font-bold">
 
 {orders.length}
 
-</p>
+</h2>
+
+
+</div>
 
 
 </div>
@@ -216,91 +243,79 @@ Orders
 
 
 
-<div className="bg-orange-500 text-white rounded-2xl p-6 shadow">
+
+<div className="bg-yellow-100 p-6 rounded-xl flex items-center gap-4">
 
 
-<div className="flex justify-between">
+<FaClock
 
-<h3 className="text-xl font-bold">
+size={40}
 
-Sales
+className="text-yellow-600"
 
-</h3>
-
-<FaMoneyBill size={30}/>
-
-</div>
+/>
 
 
-<p className="text-3xl font-bold mt-5">
-
-₹ {totalSales}
-
-</p>
+<div>
 
 
-</div>
-
-
-
-
-
-
-
-
-<div className="bg-yellow-500 text-white rounded-2xl p-6 shadow">
-
-
-<div className="flex justify-between">
-
-<h3 className="text-xl font-bold">
+<p className="text-gray-600">
 
 Pending
 
-</h3>
-
-<FaClock size={30}/>
-
-</div>
+</p>
 
 
-<p className="text-4xl font-bold mt-5">
+<h2 className="text-3xl font-bold">
 
 {pendingOrders}
 
+</h2>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div className="bg-purple-100 p-6 rounded-xl flex items-center gap-4">
+
+
+<FaMoneyBillWave
+
+size={40}
+
+className="text-purple-600"
+
+/>
+
+
+<div>
+
+
+<p className="text-gray-600">
+
+Sales
+
 </p>
 
 
-</div>
+<h2 className="text-3xl font-bold">
 
+₹ {totalSales}
 
+</h2>
 
-
-
-
-
-
-<div className="bg-purple-600 text-white rounded-2xl p-6 shadow">
-
-
-<div className="flex justify-between">
-
-<h3 className="text-xl font-bold">
-
-Delivered
-
-</h3>
-
-<FaCheckCircle size={30}/>
 
 </div>
-
-
-<p className="text-4xl font-bold mt-5">
-
-{deliveredOrders}
-
-</p>
 
 
 </div>
@@ -320,15 +335,10 @@ Delivered
 
 
 
-{/* Recent Orders */}
+<div className="mt-10 bg-white shadow rounded-xl p-6">
 
 
-
-<div className="mt-12 bg-white rounded-2xl shadow p-6">
-
-
-
-<h2 className="text-3xl font-bold mb-6">
+<h2 className="text-2xl font-bold mb-4">
 
 Recent Orders
 
@@ -338,149 +348,64 @@ Recent Orders
 
 
 
-
-<div className="overflow-x-auto">
-
-
-<table className="w-full border">
-
-
-
-<thead className="bg-gray-100">
-
-
-<tr>
-
-
-<th className="border p-3">
-
-Order ID
-
-</th>
-
-
-<th className="border p-3">
-
-Customer
-
-</th>
-
-
-<th className="border p-3">
-
-Phone
-
-</th>
-
-
-<th className="border p-3">
-
-Amount
-
-</th>
-
-
-<th className="border p-3">
-
-Status
-
-</th>
-
-
-</tr>
-
-
-</thead>
-
-
-
-
-
-
-
-<tbody>
-
-
-
 {
-
-orders.length === 0 ?
-
-
-<tr>
-
-<td
-
-colSpan="5"
-
-className="text-center p-5"
-
->
-
-No Orders Found
-
-</td>
-
-</tr>
-
-
-
-:
-
 
 orders.slice(0,5).map(order=>(
 
 
-<tr key={order.id}>
+<div
+
+key={order._id}
+
+className="border-b py-3 flex justify-between"
+
+>
 
 
-<td className="border p-3">
-
-#{order.id}
-
-</td>
+<div>
 
 
-
-<td className="border p-3">
+<p className="font-bold">
 
 {order.customerName}
 
-</td>
+</p>
 
 
-
-<td className="border p-3">
+<p className="text-gray-500">
 
 {order.phone}
 
-</td>
+</p>
+
+
+</div>
 
 
 
-<td className="border p-3">
 
-₹ {order.total}
-
-</td>
+<div>
 
 
+<p>
 
-<td className="border p-3">
+₹ {order.totalAmount}
+
+</p>
 
 
-<span className="bg-orange-100 px-3 py-1 rounded">
+<span className="text-sm">
 
-{order.status}
+{order.orderStatus}
 
 </span>
 
 
-</td>
+</div>
 
 
 
-</tr>
+</div>
 
 
 ))
@@ -490,17 +415,12 @@ orders.slice(0,5).map(order=>(
 
 
 
-</tbody>
 
 
-</table>
 
 
 </div>
 
-
-
-</div>
 
 
 

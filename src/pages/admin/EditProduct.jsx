@@ -1,76 +1,48 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import {useEffect,useState} from "react";
+import {useParams,useNavigate} from "react-router-dom";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 
 function EditProduct(){
 
 
-const { id } = useParams();
+const {id}=useParams();
 
-const navigate = useNavigate();
+const navigate=useNavigate();
 
 
-
-const [product,setProduct] = useState({
+const [product,setProduct]=useState({
 
 name:"",
-
 tamilName:"",
-
 brand:"",
-
 category:"",
-
-unit:"",
-
+unit:"Piece",
 price:"",
-
 stock:"",
-
+description:"",
 image:""
 
 });
 
 
+const [newImage,setNewImage]=useState(null);
+
+const [preview,setPreview]=useState("");
 
 
 
 
 
-// Load Product
-
+// ==========================
+// GET PRODUCT
+// ==========================
 
 useEffect(()=>{
 
 
-const products =
-
-JSON.parse(
-localStorage.getItem("products")
-) || [];
-
-
-
-const selectedProduct =
-
-products.find(
-
-item =>
-
-item.id === Number(id)
-
-);
-
-
-
-if(selectedProduct){
-
-
-setProduct(selectedProduct);
-
-
-}
+getProduct();
 
 
 },[id]);
@@ -79,11 +51,57 @@ setProduct(selectedProduct);
 
 
 
+const getProduct=async()=>{
+
+
+try{
+
+
+const res=await axios.get(
+
+`http://localhost:5000/api/products/${id}`
+
+);
+
+
+
+setProduct(res.data);
+
+
+
+if(res.data.image){
+
+setPreview(
+
+`http://localhost:5000${res.data.image}`
+
+);
+
+}
+
+
+
+}
+
+catch(error){
+
+console.log(error);
+
+}
+
+
+};
 
 
 
 
-// Input Change
+
+
+
+
+// ==========================
+// INPUT CHANGE
+// ==========================
 
 
 const handleChange=(e)=>{
@@ -108,62 +126,143 @@ setProduct({
 
 
 
-// Update Product
+// ==========================
+// IMAGE CHANGE
+// ==========================
 
 
-const updateProduct=(e)=>{
+const handleImageChange=(e)=>{
+
+
+const file=e.target.files[0];
+
+
+setNewImage(file);
+
+
+
+if(file){
+
+
+setPreview(
+
+URL.createObjectURL(file)
+
+);
+
+
+}
+
+
+};
+
+
+
+
+
+
+
+
+
+// ==========================
+// UPDATE PRODUCT
+// ==========================
+
+
+const handleSubmit=async(e)=>{
 
 
 e.preventDefault();
 
 
 
-const products =
+try{
 
-JSON.parse(
-localStorage.getItem("products")
-) || [];
 
+const formData=new FormData();
 
 
 
-const updatedProducts =
-
-products.map(item=>
-
-
-item.id === Number(id)
-
-?
-
-product
-
-:
-
-item
+formData.append(
+"name",
+product.name
+);
 
 
+formData.append(
+"tamilName",
+product.tamilName
+);
+
+
+formData.append(
+"brand",
+product.brand
+);
+
+
+formData.append(
+"category",
+product.category
+);
+
+
+formData.append(
+"unit",
+product.unit
+);
+
+
+formData.append(
+"price",
+product.price
+);
+
+
+formData.append(
+"stock",
+product.stock
+);
+
+
+formData.append(
+"description",
+product.description
 );
 
 
 
 
+// NEW IMAGE
 
+if(newImage){
 
-localStorage.setItem(
-
-"products",
-
-JSON.stringify(updatedProducts)
-
+formData.append(
+"image",
+newImage
 );
 
+}
 
 
 
-window.dispatchEvent(
 
-new Event("storage")
+
+await axios.put(
+
+`http://localhost:5000/api/products/${id}`,
+
+formData,
+
+{
+
+headers:{
+
+"Content-Type":"multipart/form-data"
+
+}
+
+}
 
 );
 
@@ -172,14 +271,31 @@ new Event("storage")
 
 
 toast.success(
-
 "Product Updated Successfully"
-
 );
 
 
 
-navigate("/admin/products");
+navigate(
+"/admin/products"
+);
+
+
+
+}
+
+catch(error){
+
+
+console.log(error);
+
+
+toast.error(
+"Update Failed"
+);
+
+
+}
 
 
 
@@ -195,7 +311,7 @@ navigate("/admin/products");
 return(
 
 
-<div className="p-6">
+<div className="p-8">
 
 
 <h1 className="text-3xl font-bold mb-8">
@@ -208,13 +324,15 @@ Edit Product
 
 
 
+
 <form
 
-onSubmit={updateProduct}
+onSubmit={handleSubmit}
 
-className="max-w-xl space-y-4"
+className="max-w-xl space-y-5"
 
 >
+
 
 
 
@@ -232,6 +350,7 @@ placeholder="Product Name"
 className="border p-3 w-full rounded"
 
 />
+
 
 
 
@@ -298,7 +417,7 @@ className="border p-3 w-full rounded"
 
 
 
-<input
+<select
 
 name="unit"
 
@@ -306,11 +425,33 @@ value={product.unit}
 
 onChange={handleChange}
 
-placeholder="Unit"
-
 className="border p-3 w-full rounded"
 
-/>
+>
+
+
+<option>
+Piece
+</option>
+
+
+<option>
+Bag
+</option>
+
+
+<option>
+Kg
+</option>
+
+
+<option>
+Meter
+</option>
+
+
+</select>
+
 
 
 
@@ -319,6 +460,8 @@ className="border p-3 w-full rounded"
 
 
 <input
+
+type="number"
 
 name="price"
 
@@ -340,6 +483,8 @@ className="border p-3 w-full rounded"
 
 <input
 
+type="number"
+
 name="stock"
 
 value={product.stock}
@@ -358,15 +503,65 @@ className="border p-3 w-full rounded"
 
 
 
+
+{/* OLD / NEW IMAGE */}
+
+
+<label className="font-bold">
+
+Change Product Image
+
+</label>
+
+
+
 <input
 
-name="image"
+type="file"
 
-value={product.image}
+accept="image/*"
+
+onChange={handleImageChange}
+
+className="border p-3 w-full"
+
+/>
+
+
+
+
+
+{
+
+preview &&
+
+<img
+
+src={preview}
+
+alt="preview"
+
+className="w-40 h-40 object-cover rounded mt-3"
+
+/>
+
+}
+
+
+
+
+
+
+
+<textarea
+
+name="description"
+
+value={product.description}
 
 onChange={handleChange}
 
-placeholder="Image URL"
+placeholder="Description"
 
 className="border p-3 w-full rounded"
 
@@ -378,14 +573,9 @@ className="border p-3 w-full rounded"
 
 
 
-<div className="flex gap-4">
-
-
 <button
 
-type="submit"
-
-className="bg-green-600 text-white px-6 py-3 rounded-lg"
+className="bg-blue-600 text-white px-8 py-3 rounded-xl"
 
 >
 
@@ -396,30 +586,9 @@ Update Product
 
 
 
-<button
-
-type="button"
-
-onClick={()=>navigate("/admin/products")}
-
-className="bg-gray-500 text-white px-6 py-3 rounded-lg"
-
->
-
-Cancel
-
-</button>
-
-
-
-</div>
-
-
-
 
 
 </form>
-
 
 
 </div>

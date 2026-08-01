@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
+
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import {
-  FaFilePdf,
-  FaSearch
-} from "react-icons/fa";
+
+import toast from "react-hot-toast";
+
 
 
 function Reports(){
@@ -12,31 +13,13 @@ function Reports(){
 
 const [orders,setOrders] = useState([]);
 
-const [search,setSearch] = useState("");
-
-const [fromDate,setFromDate] = useState("");
-
-const [toDate,setToDate] = useState("");
 
 
-
-
-
-// Load Orders
 
 
 useEffect(()=>{
 
-
-const data =
-
-JSON.parse(
-localStorage.getItem("orders")
-) || [];
-
-
-setOrders(data);
-
+loadOrders();
 
 },[]);
 
@@ -44,85 +27,39 @@ setOrders(data);
 
 
 
+const loadOrders = async()=>{
 
 
-// Date Filter
+try{
 
 
-const filteredOrders = orders.filter(order=>{
+const res = await axios.get(
 
-
-if(!fromDate && !toDate)
-return true;
-
-
-
-const orderDate =
-
-new Date(order.date);
-
-
-
-const from =
-
-fromDate
-?
-new Date(fromDate)
-:
-null;
-
-
-
-const to =
-
-toDate
-?
-new Date(toDate)
-:
-null;
-
-
-
-
-return (
-
-(!from || orderDate >= from)
-
-&&
-
-(!to || orderDate <= to)
+"http://localhost:5000/api/orders"
 
 );
 
 
-
-});
-
+setOrders(res.data);
 
 
+}
+
+catch(error){
 
 
+console.log(error);
 
 
-
-
-
-// Search
-
-
-const finalOrders = filteredOrders.filter(order=>
-
-
-order.customerName
-?.toLowerCase()
-.includes(
-search.toLowerCase()
-)
-
-
+toast.error(
+"Report Load Failed"
 );
 
 
+}
+
+
+};
 
 
 
@@ -130,17 +67,15 @@ search.toLowerCase()
 
 
 
+const totalOrders = orders.length;
 
-// Sales
 
 
-const totalSales =
-
-finalOrders.reduce(
+const totalSales = orders.reduce(
 
 (sum,item)=>
 
-sum + Number(item.total || 0),
+sum + Number(item.totalAmount),
 
 0
 
@@ -152,91 +87,37 @@ sum + Number(item.total || 0),
 
 
 
-const pending =
-
-finalOrders.filter(
-
-item=>item.status==="Pending"
-
-).length;
-
-
-
-
-
-
-const delivered =
-
-finalOrders.filter(
-
-item=>item.status==="Delivered"
-
-).length;
-
-
-
-
-
-
-
-const cancelled =
-
-finalOrders.filter(
-
-item=>item.status==="Cancelled"
-
-).length;
-
-
-
-
-
-
-
-
 
 // Product Summary
 
 
-const productSales={};
+const productSummary = {};
 
 
 
-finalOrders.forEach(order=>{
+orders.forEach(order=>{
 
 
-order.products?.forEach(item=>{
+order.items?.forEach(item=>{
 
 
-if(!productSales[item.name]){
+if(productSummary[item.name]){
 
 
-productSales[item.name]={
+productSummary[item.name] += item.qty;
 
-qty:0,
 
-amount:0
+}
 
-};
+else{
+
+
+productSummary[item.name] = item.qty;
 
 
 }
 
 
-
-productSales[item.name].qty +=
-
-Number(item.qty);
-
-
-
-productSales[item.name].amount +=
-
-Number(item.price) *
-Number(item.qty);
-
-
-
 });
 
 
@@ -246,45 +127,19 @@ Number(item.qty);
 
 
 
-const productData =
-
-Object.keys(productSales).map(name=>({
-
-
-name:name,
-
-
-qty:productSales[name].qty,
-
-
-amount:productSales[name].amount
-
-
-}));
 
 
 
-
-
-
-
-
-
-// PDF Report
-
-
-const downloadPDF=()=>{
+const downloadPDF = ()=>{
 
 
 const doc = new jsPDF();
 
 
 
-doc.setFontSize(18);
-
 doc.text(
 
-"SRI MURUGAN AGENCY",
+"Sri Murugan Agency Sales Report",
 
 14,
 
@@ -294,16 +149,14 @@ doc.text(
 
 
 
-doc.setFontSize(12);
-
 
 doc.text(
 
-"Sales Report",
+`Total Orders : ${totalOrders}`,
 
 14,
 
-30
+35
 
 );
 
@@ -311,25 +164,34 @@ doc.text(
 
 doc.text(
 
-`Total Orders : ${finalOrders.length}`,
+`Total Sales : Rs.${totalSales}`,
 
 14,
 
-40
+45
 
 );
 
 
 
-doc.text(
 
-`Total Sales : ₹ ${totalSales}`,
 
-14,
 
-48
+const tableData = orders.map(order=>(
 
-);
+[
+
+order.customerName,
+
+order.phone,
+
+order.totalAmount,
+
+order.orderStatus
+
+]
+
+));
 
 
 
@@ -337,33 +199,26 @@ doc.text(
 
 autoTable(doc,{
 
-
-startY:60,
-
+startY:55,
 
 head:[
 
 [
-"Product",
-"Qty",
-"Amount"
+
+"Customer",
+
+"Phone",
+
+"Amount",
+
+"Status"
+
 ]
 
 ],
 
 
-
-body:
-
-productData.map(item=>[
-
-item.name,
-
-item.qty,
-
-`₹ ${item.amount}`
-
-])
+body:tableData
 
 
 });
@@ -374,13 +229,13 @@ item.qty,
 
 doc.save(
 
-"Sales-Report.pdf"
+"sri-murugan-sales-report.pdf"
 
 );
 
 
-};
 
+};
 
 
 
@@ -398,47 +253,41 @@ return(
 
 
 
-<h1 className="text-3xl font-bold mb-2">
 
-Reports
+
+<h1 className="text-3xl font-bold mb-8">
+
+Sales Reports
 
 </h1>
 
 
-<p className="text-gray-500 mb-8">
-
-Sri Murugan Agency Sales Report
-
-</p>
 
 
 
 
 
+<div className="grid md:grid-cols-3 gap-6 mb-8">
 
 
 
 
-{/* Summary Cards */}
 
+<div className="bg-blue-100 p-6 rounded-xl">
 
-<div className="grid md:grid-cols-4 gap-6 mb-8">
-
-
-
-<div className="bg-blue-600 text-white p-6 rounded-xl">
-
-<h3 className="font-bold">
+<p>
 
 Total Orders
 
-</h3>
-
-<p className="text-4xl mt-3">
-
-{finalOrders.length}
-
 </p>
+
+
+<h2 className="text-3xl font-bold">
+
+{totalOrders}
+
+</h2>
+
 
 </div>
 
@@ -446,19 +295,23 @@ Total Orders
 
 
 
-<div className="bg-green-600 text-white p-6 rounded-xl">
 
-<h3 className="font-bold">
+
+<div className="bg-green-100 p-6 rounded-xl">
+
+<p>
 
 Total Sales
 
-</h3>
+</p>
 
-<p className="text-3xl mt-3">
+
+<h2 className="text-3xl font-bold">
 
 ₹ {totalSales}
 
-</p>
+</h2>
+
 
 </div>
 
@@ -466,42 +319,26 @@ Total Sales
 
 
 
-<div className="bg-yellow-500 text-white p-6 rounded-xl">
 
-<h3 className="font-bold">
 
-Pending
+<div className="bg-orange-100 p-6 rounded-xl">
 
-</h3>
+<p>
 
-<p className="text-4xl mt-3">
-
-{pending}
+Products Sold
 
 </p>
 
-</div>
 
+<h2 className="text-3xl font-bold">
 
+{
 
+Object.keys(productSummary).length
 
+}
 
-<div className="bg-purple-600 text-white p-6 rounded-xl">
-
-<h3 className="font-bold">
-
-Delivered
-
-</h3>
-
-<p className="text-4xl mt-3">
-
-{delivered}
-
-</p>
-
-</div>
-
+</h2>
 
 
 </div>
@@ -510,64 +347,9 @@ Delivered
 
 
 
-
-
-
-
-{/* Filters */}
-
-
-<div className="flex flex-wrap gap-4 mb-8">
-
-
-<div className="flex items-center border rounded-lg px-3">
-
-<FaSearch/>
-
-
-<input
-
-placeholder="Search Customer"
-
-value={search}
-
-onChange={(e)=>setSearch(e.target.value)}
-
-className="p-3 outline-none"
-
-/>
-
-
 </div>
 
 
-
-
-<input
-
-type="date"
-
-value={fromDate}
-
-onChange={(e)=>setFromDate(e.target.value)}
-
-className="border p-3 rounded"
-
-/>
-
-
-
-<input
-
-type="date"
-
-value={toDate}
-
-onChange={(e)=>setToDate(e.target.value)}
-
-className="border p-3 rounded"
-
-/>
 
 
 
@@ -578,39 +360,34 @@ className="border p-3 rounded"
 
 onClick={downloadPDF}
 
-className="bg-red-600 text-white px-5 py-3 rounded flex items-center gap-2"
+className="bg-red-600 text-white px-6 py-3 rounded-lg mb-6"
 
 >
 
-<FaFilePdf/>
 
-Download PDF
+Download PDF Report
+
 
 </button>
 
 
 
-</div>
 
 
 
 
-
-
-
-
-
-{/* Product Sales Table */}
 
 
 <div className="bg-white shadow rounded-xl p-6">
 
 
-<h2 className="text-2xl font-bold mb-5">
+<h2 className="text-2xl font-bold mb-4">
 
-Product Sales Summary
+Order Report
 
 </h2>
+
+
 
 
 
@@ -619,19 +396,20 @@ Product Sales Summary
 
 <thead className="bg-gray-100">
 
+
 <tr>
 
 
 <th className="border p-3">
 
-Product
+Customer
 
 </th>
 
 
 <th className="border p-3">
 
-Quantity
+Phone
 
 </th>
 
@@ -643,10 +421,20 @@ Amount
 </th>
 
 
+<th className="border p-3">
+
+Status
+
+</th>
+
+
 </tr>
 
 
 </thead>
+
+
+
 
 
 
@@ -655,58 +443,38 @@ Amount
 
 {
 
-productData.length===0 ?
+orders.map(order=>(
 
 
-<tr>
-
-<td
-
-colSpan="3"
-
-className="text-center p-5"
-
->
-
-No Sales Data
-
-</td>
-
-</tr>
-
-
-
-:
-
-
-productData.map(item=>(
-
-
-<tr key={item.name}>
+<tr key={order._id}>
 
 
 <td className="border p-3">
 
-{item.name}
+{order.customerName}
 
 </td>
-
 
 
 <td className="border p-3">
 
-{item.qty}
+{order.phone}
 
 </td>
-
 
 
 <td className="border p-3">
 
-₹ {item.amount}
+₹ {order.totalAmount}
 
 </td>
 
+
+<td className="border p-3">
+
+{order.orderStatus}
+
+</td>
 
 
 </tr>
@@ -722,10 +490,15 @@ productData.map(item=>(
 </tbody>
 
 
+
 </table>
 
 
+
+
 </div>
+
+
 
 
 

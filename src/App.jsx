@@ -14,7 +14,9 @@ import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
+
 
 
 // Admin Pages
@@ -34,81 +36,151 @@ function App() {
 
 return (
 
+
 <Routes>
 
 
-{/* =====================
+
+
+
+{/* =========================
         ADMIN LOGIN
-===================== */}
+========================= */}
+
 
 
 <Route
-path="/admin"
+
+path="/admin/login"
+
 element={<AdminLogin />}
+
 />
 
 
 
 
 
-{/* =====================
+
+
+
+{/* =========================
         ADMIN PANEL
-===================== */}
+========================= */}
+
+
 
 
 <Route
+
 path="/admin"
+
 element={<AdminLayout />}
+
 >
 
 
 
+
 <Route
-path="dashboard"
+
+index
+
 element={<Dashboard />}
+
 />
 
 
 
+
+
 <Route
+
+path="dashboard"
+
+element={<Dashboard />}
+
+/>
+
+
+
+
+
+
+<Route
+
 path="products"
+
 element={<ProductsList />}
+
 />
 
 
 
+
+
+
 <Route
+
 path="products/add"
+
 element={<AddProduct />}
+
 />
 
 
 
+
+
+
 <Route
+
 path="products/edit/:id"
+
 element={<EditProduct />}
+
 />
 
 
 
+
+
+
 <Route
+
 path="orders"
+
 element={<Orders />}
+
 />
 
 
 
+
+
+
 <Route
+
 path="reports"
+
 element={<Reports />}
+
 />
+
+
+
 
 
 
 <Route
+
 path="settings"
+
 element={<Settings />}
+
 />
+
+
 
 
 
@@ -120,74 +192,150 @@ element={<Settings />}
 
 
 
-{/* =====================
-        CUSTOMER WEBSITE
-===================== */}
+
+
+
+
+
+{/* =========================
+        WEBSITE
+========================= */}
+
+
 
 
 <Route
+
 element={<Layout />}
+
 >
 
 
 
+
 <Route
+
 path="/"
+
 element={<Home />}
+
 />
 
 
 
+
+
+
 <Route
+
 path="/products"
+
 element={<Products />}
+
 />
 
 
 
-<Route
-path="/about"
-element={<About />}
-/>
 
 
 
 <Route
-path="/gallery"
-element={<Gallery />}
-/>
 
-
-
-<Route
-path="/contact"
-element={<Contact />}
-/>
-
-
-
-<Route
 path="/product/:id"
+
 element={<ProductDetails />}
+
 />
 
 
 
+
+
+
 <Route
+
+path="/about"
+
+element={<About />}
+
+/>
+
+
+
+
+
+
+<Route
+
+path="/gallery"
+
+element={<Gallery />}
+
+/>
+
+
+
+
+
+
+<Route
+
+path="/contact"
+
+element={<Contact />}
+
+/>
+
+
+
+
+
+
+<Route
+
 path="/cart"
+
 element={<Cart />}
+
 />
+
+
+
+
 
 
 
 <Route
-path="/checkout-success"
-element={<CheckoutSuccess />}
+
+path="/checkout"
+
+element={<Checkout />}
+
 />
+
+
+
+
+
+
+<Route
+
+path="/checkout-success"
+
+element={<CheckoutSuccess />}
+
+/>
+
+
+
 
 
 
 </Route>
+
+
+
+
 
 
 

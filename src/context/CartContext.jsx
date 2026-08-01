@@ -1,105 +1,265 @@
 import { createContext, useContext, useState } from "react";
-import toast from "react-hot-toast";
 
-const CartContext = createContext();
 
-export const useCart = () => useContext(CartContext);
+const CartContext = createContext(null);
 
-export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
 
-  // Add Product
-  const addToCart = (product, quantity = 1) => {
-    const exist = cartItems.find((item) => item.id === product.id);
 
-    if (exist) {
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + quantity,
-              }
-            : item
-        )
-      );
+export function CartProvider({children}){
 
-      toast.success(
-        `${product.name} quantity updated`
-      );
-    } else {
-      setCartItems([
-        ...cartItems,
-        {
-          ...product,
-          quantity,
-        },
-      ]);
 
-      toast.success(
-        `${product.name} added to cart`
-      );
-    }
-  };
+const [cartItems,setCartItems] = useState([]);
 
-  // Increase Quantity
-  const increaseQty = (id) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity: item.quantity + 1,
-            }
-          : item
-      )
-    );
-  };
 
-  // Decrease Quantity
-  const decreaseQty = (id) => {
-    setCartItems(
-      cartItems
-        .map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                quantity: item.quantity - 1,
-              }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
-  };
 
-  // Remove Product
-  const removeItem = (id) => {
-    setCartItems(
-      cartItems.filter((item) => item.id !== id)
-    );
 
-    toast.success("Product removed");
-  };
 
-  // Clear Cart
-  const clearCart = () => {
-    setCartItems([]);
+// ADD TO CART
 
-    toast.success("Cart cleared");
-  };
+const addToCart = (product, quantity=1)=>{
 
-  return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        addToCart,
-        increaseQty,
-        decreaseQty,
-        removeItem,
-        clearCart,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
+
+setCartItems(prev=>{
+
+
+const existing = prev.find(
+
+item=>item._id === product._id
+
+);
+
+
+
+if(existing){
+
+
+return prev.map(item=>
+
+item._id === product._id
+
+?
+
+{
+
+...item,
+
+quantity:item.quantity + quantity
+
+}
+
+:
+
+item
+
+
+);
+
+
+}
+
+
+
+
+return [
+
+...prev,
+
+{
+
+...product,
+
+quantity
+
+}
+
+];
+
+
+});
+
+
+};
+
+
+
+
+
+
+
+
+
+// INCREASE
+
+const increaseQuantity = (id)=>{
+
+
+setCartItems(prev=>
+
+prev.map(item=>
+
+item._id===id
+
+?
+
+{
+
+...item,
+
+quantity:item.quantity+1
+
+}
+
+:
+
+item
+
+)
+
+
+);
+
+
+};
+
+
+
+
+
+
+
+
+
+// DECREASE
+
+const decreaseQuantity = (id)=>{
+
+
+setCartItems(prev=>
+
+prev.map(item=>
+
+item._id===id && item.quantity>1
+
+?
+
+{
+
+...item,
+
+quantity:item.quantity-1
+
+}
+
+:
+
+item
+
+)
+
+
+);
+
+
+};
+
+
+
+
+
+
+
+
+
+// REMOVE
+
+const removeFromCart=(id)=>{
+
+
+setCartItems(prev=>
+
+prev.filter(
+
+item=>item._id!==id
+
+)
+
+);
+
+
+};
+
+
+
+
+
+
+
+
+
+// CLEAR CART
+
+const clearCart=()=>{
+
+
+setCartItems([]);
+
+
+};
+
+
+
+
+
+
+
+
+
+return(
+
+
+<CartContext.Provider
+
+value={{
+
+cartItems,
+
+addToCart,
+
+increaseQuantity,
+
+decreaseQuantity,
+
+removeFromCart,
+
+clearCart
+
+}}
+
+>
+
+
+{children}
+
+
+</CartContext.Provider>
+
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+export function useCart(){
+
+
+return useContext(CartContext);
+
+
 }

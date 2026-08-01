@@ -1,32 +1,78 @@
 import { useEffect, useState } from "react";
-import { FaSearch, FaTrash, FaEye } from "react-icons/fa";
+import axios from "axios";
+
+import {
+  FaTrash,
+  FaWhatsapp,
+  FaEye,
+  FaFilePdf
+} from "react-icons/fa";
+
 import toast from "react-hot-toast";
 
-
-function Orders() {
-
-
-const [orders,setOrders] = useState([]);
-
-const [search,setSearch] = useState("");
-
-const [selectedOrder,setSelectedOrder] = useState(null);
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 
 
+function Orders(){
 
 
-// Load Orders
+const [orders,setOrders]=useState([]);
+
+const [loading,setLoading]=useState(true);
+
+const [selectedOrder,setSelectedOrder]=useState(null);
+
+
+
+
+// GET ORDERS
+
+const getOrders = async()=>{
+
+
+try{
+
+
+const res = await axios.get(
+
+"http://localhost:5000/api/orders"
+
+);
+
+
+setOrders(res.data);
+
+
+}
+
+catch(error){
+
+console.log(error);
+
+toast.error(
+"Order loading failed"
+);
+
+}
+
+finally{
+
+setLoading(false);
+
+}
+
+
+};
+
+
+
+
 
 useEffect(()=>{
 
-
-const savedOrders =
-JSON.parse(localStorage.getItem("orders")) || [];
-
-
-setOrders(savedOrders);
-
+getOrders();
 
 },[]);
 
@@ -36,83 +82,40 @@ setOrders(savedOrders);
 
 
 
-// Status Change
+// UPDATE STATUS
 
-const changeStatus=(id,status)=>{
+const updateStatus = async(id,status)=>{
 
 
-const updatedOrders = orders.map(order=>
+try{
 
-order.id === id
 
-?
+await axios.put(
+
+`http://localhost:5000/api/orders/${id}`,
 
 {
-...order,
-status:status
+status
 }
 
-:
-
-order
-
 );
 
 
-
-setOrders(updatedOrders);
-
-
-localStorage.setItem(
-
-"orders",
-
-JSON.stringify(updatedOrders)
-
+toast.success(
+"Status Updated"
 );
 
 
-toast.success("Status Updated");
+getOrders();
 
 
-};
+}
 
+catch(error){
 
-
-
-
-
-
-// Delete Order
-
-const deleteOrder=(id)=>{
-
-
-if(window.confirm("Delete this order?")){
-
-
-const updatedOrders =
-orders.filter(
-order=>order.id!==id
+toast.error(
+"Update failed"
 );
-
-
-
-setOrders(updatedOrders);
-
-
-localStorage.setItem(
-
-"orders",
-
-JSON.stringify(updatedOrders)
-
-);
-
-
-
-toast.success("Order Deleted");
-
 
 }
 
@@ -125,24 +128,284 @@ toast.success("Order Deleted");
 
 
 
+// DELETE ORDER
 
-// Search
-
-const filteredOrders = orders.filter(order=>
-
-
-order.customerName
-?.toLowerCase()
-.includes(search.toLowerCase())
+const deleteOrder = async(id)=>{
 
 
-||
+if(!window.confirm(
+"Delete this order?"
+))
+return;
 
-order.phone
-?.includes(search)
 
+
+try{
+
+
+await axios.delete(
+
+`http://localhost:5000/api/orders/${id}`
 
 );
+
+
+
+toast.success(
+"Order Deleted"
+);
+
+
+
+getOrders();
+
+
+
+}
+
+catch(error){
+
+toast.error(
+"Delete failed"
+);
+
+}
+
+
+};
+
+
+
+
+
+
+
+
+
+// WHATSAPP
+
+const whatsapp=(order)=>{
+
+
+const message = `
+
+Sri Murugan Agency
+
+Hello ${order.customerName}
+
+Your Order:
+
+${order.products.map(
+item =>
+`${item.name} x ${item.quantity}`
+).join("\n")}
+
+
+Total Amount:
+₹${order.totalAmount}
+
+
+Thank You
+
+`;
+
+
+
+window.open(
+
+"https://wa.me/91"+
+
+order.phone+
+
+"?text="+
+
+encodeURIComponent(message),
+
+"_blank"
+
+);
+
+
+};
+
+
+
+
+
+
+
+
+
+
+// PDF INVOICE
+
+
+const downloadInvoice=(order)=>{
+
+
+const doc = new jsPDF();
+
+
+
+doc.setFontSize(18);
+
+doc.text(
+
+"SRI MURUGAN AGENCY",
+
+14,
+
+20
+
+);
+
+
+
+doc.setFontSize(12);
+
+
+doc.text(
+
+"Construction Materials",
+
+14,
+
+28
+
+);
+
+
+
+doc.text(
+
+`Customer : ${order.customerName}`,
+
+14,
+
+40
+
+);
+
+
+
+doc.text(
+
+`Mobile : ${order.phone}`,
+
+14,
+
+48
+
+);
+
+
+
+doc.text(
+
+`Address : ${order.address}`,
+
+14,
+
+56
+
+);
+
+
+
+doc.text(
+
+`Date : ${new Date(order.createdAt).toLocaleDateString()}`,
+
+14,
+
+64
+
+);
+
+
+
+
+
+autoTable(doc,{
+
+startY:75,
+
+
+head:[
+
+[
+"Product",
+"Qty",
+"Price"
+]
+
+],
+
+
+body:
+
+order.products.map(item=>[
+
+item.name,
+
+item.quantity,
+
+`Rs ${item.price}`
+
+])
+
+
+});
+
+
+
+
+
+doc.text(
+
+`Total Amount : Rs ${order.totalAmount}`,
+
+14,
+
+doc.lastAutoTable.finalY + 15
+
+);
+
+
+
+
+
+doc.save(
+
+`Invoice-${order._id}.pdf`
+
+);
+
+
+};
+
+
+
+
+
+
+
+
+
+if(loading){
+
+return(
+
+<div className="p-6 text-xl">
+
+Loading Orders...
+
+</div>
+
+);
+
+}
+
 
 
 
@@ -156,44 +419,11 @@ return(
 <div className="p-6">
 
 
+<h1 className="text-3xl font-bold mb-6">
 
-<h1 className="text-3xl font-bold mb-2">
 Orders
+
 </h1>
-
-
-<p className="text-gray-500 mb-8">
-Sri Murugan Agency
-</p>
-
-
-
-
-
-{/* Search */}
-
-<div className="flex items-center border rounded-lg px-3 w-full md:w-96 mb-6">
-
-
-<FaSearch/>
-
-
-<input
-
-placeholder="Search orders..."
-
-value={search}
-
-onChange={(e)=>setSearch(e.target.value)}
-
-className="p-3 outline-none w-full"
-
-/>
-
-
-</div>
-
-
 
 
 
@@ -206,16 +436,10 @@ className="p-3 outline-none w-full"
 <table className="w-full border">
 
 
-
 <thead className="bg-gray-100">
 
 
 <tr>
-
-
-<th className="border p-3">
-Order ID
-</th>
 
 
 <th className="border p-3">
@@ -224,7 +448,12 @@ Customer
 
 
 <th className="border p-3">
-Phone
+Mobile
+</th>
+
+
+<th className="border p-3">
+Address
 </th>
 
 
@@ -258,65 +487,22 @@ Action
 
 
 
-
 <tbody>
 
 
-
 {
-filteredOrders.length===0 ?
+
+orders.map(order=>(
 
 
-<tr>
-
-<td
-colSpan="7"
-className="text-center p-5"
->
-
-No Orders Found
-
-</td>
-
-</tr>
-
-
-
-:
-
-
-filteredOrders.map(order=>(
-
-
-<tr key={order.id}>
+<tr key={order._id}>
 
 
 <td className="border p-3">
 
-{order.id}
-
-</td>
-
-
-
-
-
-<td className="border p-3">
-
-
-<p className="font-bold">
 {order.customerName}
-</p>
-
-
-<p className="text-sm">
-{order.deliveryType}
-</p>
-
 
 </td>
-
-
 
 
 
@@ -329,6 +515,14 @@ filteredOrders.map(order=>(
 
 
 
+<td className="border p-3">
+
+{order.address}
+
+</td>
+
+
+
 
 
 
@@ -336,33 +530,26 @@ filteredOrders.map(order=>(
 
 
 {
-order.products?.map((item,index)=>(
+
+order.products.map(
+
+(item,index)=>(
 
 
-<div
-key={index}
-className="mb-2"
->
-
-
-<p className="font-semibold">
+<div key={index}>
 
 {item.name}
 
-</p>
+×
 
-
-<p>
-
-Qty : {item.quantity}
-
-</p>
-
+{item.quantity}
 
 </div>
 
 
-))
+)
+
+)
 
 }
 
@@ -374,13 +561,11 @@ Qty : {item.quantity}
 
 
 
+<td className="border p-3">
 
-<td className="border p-3 font-bold text-green-600">
-
-₹ {order.total}
+₹{order.totalAmount}
 
 </td>
-
 
 
 
@@ -396,13 +581,20 @@ Qty : {item.quantity}
 value={order.status}
 
 onChange={(e)=>
-changeStatus(
-order.id,
+
+updateStatus(
+
+order._id,
+
 e.target.value
+
 )
+
 }
 
+
 className="border p-2 rounded"
+
 
 >
 
@@ -427,13 +619,11 @@ Cancelled
 </option>
 
 
+
 </select>
 
 
-
 </td>
-
-
 
 
 
@@ -452,7 +642,7 @@ Cancelled
 
 onClick={()=>setSelectedOrder(order)}
 
-className="bg-blue-600 text-white p-2 rounded"
+className="bg-blue-500 text-white p-2 rounded"
 
 >
 
@@ -467,16 +657,51 @@ className="bg-blue-600 text-white p-2 rounded"
 
 <button
 
-onClick={()=>deleteOrder(order.id)}
+onClick={()=>whatsapp(order)}
 
-className="bg-red-600 text-white p-2 rounded"
+className="bg-green-600 text-white p-2 rounded"
+
+>
+
+<FaWhatsapp/>
+
+</button>
+
+
+
+
+
+
+
+<button
+
+onClick={()=>downloadInvoice(order)}
+
+className="bg-purple-600 text-white p-2 rounded"
+
+>
+
+<FaFilePdf/>
+
+</button>
+
+
+
+
+
+
+
+<button
+
+onClick={()=>deleteOrder(order._id)}
+
+className="bg-red-500 text-white p-2 rounded"
 
 >
 
 <FaTrash/>
 
 </button>
-
 
 
 
@@ -489,7 +714,6 @@ className="bg-red-600 text-white p-2 rounded"
 
 
 
-
 </tr>
 
 
@@ -497,6 +721,7 @@ className="bg-red-600 text-white p-2 rounded"
 
 
 }
+
 
 
 </tbody>
@@ -514,24 +739,23 @@ className="bg-red-600 text-white p-2 rounded"
 
 
 
-
-{/* Order View Modal */}
-
-
 {
+
 selectedOrder &&
+
 
 <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
 
 
-<div className="bg-white rounded-xl p-6 w-96">
+<div className="bg-white p-6 rounded w-96">
 
 
-<h2 className="text-2xl font-bold mb-4">
+<h2 className="text-xl font-bold">
 
 Order Details
 
 </h2>
+
 
 
 <p>
@@ -545,41 +769,8 @@ Phone : {selectedOrder.phone}
 
 
 <p>
-Address : {selectedOrder.address}
+Amount : ₹{selectedOrder.totalAmount}
 </p>
-
-
-
-<hr className="my-4"/>
-
-
-
-{
-selectedOrder.products?.map(
-(item,index)=>(
-
-<div key={index}>
-
-{item.name}
-
--
-{item.quantity}
-
-</div>
-
-)
-
-)
-}
-
-
-
-
-<h3 className="text-xl font-bold mt-4">
-
-Total : ₹ {selectedOrder.total}
-
-</h3>
 
 
 
@@ -588,7 +779,7 @@ Total : ₹ {selectedOrder.total}
 
 onClick={()=>setSelectedOrder(null)}
 
-className="mt-5 bg-gray-700 text-white px-5 py-2 rounded"
+className="mt-4 bg-gray-800 text-white px-4 py-2 rounded"
 
 >
 
@@ -610,7 +801,7 @@ Close
 </div>
 
 
-)
+);
 
 
 }

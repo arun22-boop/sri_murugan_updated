@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
 import {
   FaEdit,
   FaTrash,
@@ -8,6 +9,10 @@ import {
 } from "react-icons/fa";
 
 import toast from "react-hot-toast";
+import axios from "axios";
+
+
+const API_URL = "http://localhost:5000";
 
 
 function ProductsList(){
@@ -19,37 +24,61 @@ const [search,setSearch] = useState("");
 
 const [category,setCategory] = useState("All");
 
+const [loading,setLoading] = useState(true);
 
 
 
 
 
+// ======================
 // Load Products
-
+// ======================
 
 useEffect(()=>{
 
-
 loadProducts();
-
 
 },[]);
 
 
 
 
-
-const loadProducts=()=>{
-
-
-const data =
-
-JSON.parse(
-localStorage.getItem("products")
-) || [];
+const loadProducts = async()=>{
 
 
-setProducts(data);
+try{
+
+
+setLoading(true);
+
+
+const res = await axios.get(
+`${API_URL}/api/products`
+);
+
+
+setProducts(res.data);
+
+
+
+}
+catch(error){
+
+
+console.log(error);
+
+
+toast.error(
+"Products Load Failed"
+);
+
+
+}
+finally{
+
+setLoading(false);
+
+}
 
 
 };
@@ -62,42 +91,41 @@ setProducts(data);
 
 
 
+// ======================
 // Delete Product
+// ======================
+
+const deleteProduct = async(id)=>{
 
 
-const deleteProduct=(id)=>{
-
-
-const confirmDelete =
-
-window.confirm(
+const confirmDelete = window.confirm(
 "Delete this product?"
 );
 
 
 
-if(confirmDelete){
+if(!confirmDelete) return;
 
 
-const updated =
+
+try{
+
+
+await axios.delete(
+
+`${API_URL}/api/products/${id}`
+
+);
+
+
+
+setProducts(
 
 products.filter(
-item=>item.id !== id
-);
-
-
-
-localStorage.setItem(
-
-"products",
-
-JSON.stringify(updated)
+item=>item._id !== id
+)
 
 );
-
-
-
-setProducts(updated);
 
 
 
@@ -105,6 +133,18 @@ toast.success(
 "Product Deleted"
 );
 
+
+
+}
+catch(error){
+
+
+console.log(error);
+
+
+toast.error(
+"Delete Failed"
+);
 
 
 }
@@ -121,10 +161,13 @@ toast.success(
 
 
 
+
+// ======================
 // Categories
+// ======================
 
 
-const categories = [
+const categories=[
 
 "All",
 
@@ -146,29 +189,40 @@ item=>item.category
 
 
 
+// ======================
 // Filter
+// ======================
 
 
-const filteredProducts =
+const filteredProducts = products.filter(item=>{
 
-products.filter(item=>{
+
+const text =
+search.toLowerCase();
+
 
 
 const searchMatch =
 
 item.name
 ?.toLowerCase()
-.includes(
-search.toLowerCase()
-)
+.includes(text)
+
 
 ||
 
 item.brand
 ?.toLowerCase()
-.includes(
-search.toLowerCase()
-);
+.includes(text)
+
+
+||
+
+item.tamilName
+?.toLowerCase()
+.includes(text);
+
+
 
 
 
@@ -186,7 +240,9 @@ item.category===category;
 return searchMatch && categoryMatch;
 
 
+
 });
+
 
 
 
@@ -206,7 +262,6 @@ return(
 
 {/* Header */}
 
-
 <div className="flex justify-between items-center mb-8">
 
 
@@ -220,6 +275,7 @@ Products
 </h1>
 
 
+
 <p className="text-gray-500">
 
 Sri Murugan Agency
@@ -227,7 +283,11 @@ Sri Murugan Agency
 </p>
 
 
+
 </div>
+
+
+
 
 
 
@@ -240,15 +300,18 @@ className="bg-blue-600 text-white px-5 py-3 rounded-lg flex items-center gap-2"
 
 >
 
+
 <FaPlus/>
 
 Add Product
+
 
 </Link>
 
 
 
 </div>
+
 
 
 
@@ -265,14 +328,18 @@ Add Product
 
 <h2 className="text-xl font-bold">
 
+
 Total Products :
+
 
 <span className="text-orange-600">
 
 {" "}
+
 {products.length}
 
 </span>
+
 
 </h2>
 
@@ -287,16 +354,18 @@ Total Products :
 
 
 
-{/* Search + Filter */}
+{/* Search */}
 
 
-<div className="flex flex-wrap gap-4 mb-6">
+<div className="flex gap-4 mb-6 flex-wrap">
 
 
 
 <div className="flex items-center border rounded-lg px-3">
 
+
 <FaSearch className="text-gray-400"/>
+
 
 
 <input
@@ -307,9 +376,7 @@ placeholder="Search Product..."
 
 value={search}
 
-onChange={(e)=>
-setSearch(e.target.value)
-}
+onChange={(e)=>setSearch(e.target.value)}
 
 className="p-3 outline-none"
 
@@ -328,9 +395,7 @@ className="p-3 outline-none"
 
 value={category}
 
-onChange={(e)=>
-setCategory(e.target.value)
-}
+onChange={(e)=>setCategory(e.target.value)}
 
 className="border rounded-lg p-3"
 
@@ -356,7 +421,6 @@ categories.map(item=>(
 
 
 
-
 </div>
 
 
@@ -368,6 +432,7 @@ categories.map(item=>(
 
 
 {/* Table */}
+
 
 
 <div className="overflow-x-auto">
@@ -383,51 +448,37 @@ categories.map(item=>(
 
 
 <th className="border p-3">
-
 Image
-
 </th>
 
 
 <th className="border p-3">
-
 Name
-
 </th>
 
 
 <th className="border p-3">
-
 Brand
-
 </th>
 
 
 <th className="border p-3">
-
 Category
-
 </th>
 
 
 <th className="border p-3">
-
 Price
-
 </th>
 
 
 <th className="border p-3">
-
 Stock
-
 </th>
 
 
 <th className="border p-3">
-
 Action
-
 </th>
 
 
@@ -441,15 +492,38 @@ Action
 
 
 
-
-
-
 <tbody>
+
 
 
 {
 
+loading ?
+
+
+<tr>
+
+<td
+
+colSpan="7"
+
+className="text-center p-5"
+
+>
+
+Loading...
+
+</td>
+
+</tr>
+
+
+
+:
+
+
 filteredProducts.length===0 ?
+
 
 
 <tr>
@@ -470,13 +544,15 @@ No Products Found
 
 
 
+
 :
+
 
 
 filteredProducts.map(item=>(
 
 
-<tr key={item.id}>
+<tr key={item._id}>
 
 
 <td className="border p-3">
@@ -484,14 +560,35 @@ filteredProducts.map(item=>(
 
 <img
 
+
 src={
-item.image ||
+
+item.image
+
+?
+
+`${API_URL}${item.image}`
+
+:
+
 "https://via.placeholder.com/80"
+
 }
+
+
+onError={(e)=>
+
+e.currentTarget.src=
+"https://via.placeholder.com/80"
+
+}
+
 
 className="w-16 h-16 object-contain"
 
+
 />
+
 
 
 </td>
@@ -538,13 +635,11 @@ className="w-16 h-16 object-contain"
 
 
 
-
 <td className="border p-3">
 
 {item.category}
 
 </td>
-
 
 
 
@@ -568,7 +663,7 @@ className="w-16 h-16 object-contain"
 
 {
 
-Number(item.stock) < 10 ?
+Number(item.stock)<10 ?
 
 
 <span className="text-red-600 font-bold">
@@ -591,10 +686,7 @@ Low Stock ({item.stock})
 }
 
 
-
 </td>
-
-
 
 
 
@@ -608,16 +700,17 @@ Low Stock ({item.stock})
 <div className="flex gap-3">
 
 
-
 <Link
 
-to={`/admin/products/edit/${item.id}`}
+to={`/admin/products/edit/${item._id}`}
 
 className="bg-green-600 text-white p-2 rounded"
 
 >
 
+
 <FaEdit/>
+
 
 </Link>
 
@@ -628,20 +721,21 @@ className="bg-green-600 text-white p-2 rounded"
 
 <button
 
-onClick={()=>deleteProduct(item.id)}
+onClick={()=>deleteProduct(item._id)}
 
 className="bg-red-600 text-white p-2 rounded"
 
 >
 
+
 <FaTrash/>
+
 
 </button>
 
 
 
 </div>
-
 
 
 </td>
@@ -659,10 +753,13 @@ className="bg-red-600 text-white p-2 rounded"
 }
 
 
+
 </tbody>
 
 
+
 </table>
+
 
 
 </div>
