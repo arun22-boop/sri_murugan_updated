@@ -32,7 +32,7 @@ function AddProduct() {
     try {
 
       await axios.post(
-        "https://YOUR-BACKEND-URL.onrender.com/api/products",
+        "http://localhost:5000/api/products",
         product
       );
 

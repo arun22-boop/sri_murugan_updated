@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 
 
-const API_URL = "https://YOUR-BACKEND-URL.onrender.com";
+const API_URL = "http://localhost:5000";
 
 
 function ProductsList(){
