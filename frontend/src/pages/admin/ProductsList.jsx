@@ -52,10 +52,9 @@ try{
 setLoading(true);
 
 
-const res = await axios.get(
-`${API_URL}/api/products`
-);
+const res = await axios.get(`${API_URL}/api/products`);
 
+console.log("API Response:", res.data);
 
 setProducts(res.data);
 
