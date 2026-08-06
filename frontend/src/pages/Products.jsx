@@ -42,10 +42,9 @@ const getProducts = async()=>{
 try{
 
 
-const res = await fetch(
+const API_URL = "https://your-backend.onrender.com";
 
-"http://localhost:5000/api/products"
-);
+const res = await fetch(`${API_URL}/api/products`);
 
 
 
