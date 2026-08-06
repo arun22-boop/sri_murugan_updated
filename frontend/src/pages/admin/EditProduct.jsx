@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://YOUR-BACKEND-URL.onrender.com";
 
 function EditProduct() {
   const { id } = useParams();

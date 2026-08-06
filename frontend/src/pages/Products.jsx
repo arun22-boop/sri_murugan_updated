@@ -44,7 +44,7 @@ try{
 
 const res = await fetch(
 
-"http://localhost:5000/api/products"
+"https://YOUR-BACKEND-URL.onrender.com/api/products"
 
 );
 
